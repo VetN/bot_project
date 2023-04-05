@@ -9,8 +9,15 @@ keys = {
     'евро': 'EUR',
     'доллар': 'USD',
     'фунт': 'GBR',
-    'биткоин': 'BTC'
+    'биткоин': 'BTC',
+    'рубль': 'RUB',
+    'юань': 'CNH'
 }
+
+class ConvertionException(Exception):
+    print("Неправильный ввод данных")
+    #pass
+
 
 @bot.message_handler(commands=['start', 'help'])
 def start_exchange(message: telebot.types.Message):
@@ -20,13 +27,33 @@ def start_exchange(message: telebot.types.Message):
 def values(message: telebot.types.Message):
     text = 'Доступные валюты:'
     for key in keys.keys():
-        text = '\n'.join((text, key, ))
+        text = '\n'.join((text, key))
     bot.reply_to(message, text)
 
-@bot.message_handler(content_types = ['text', ])
+@bot.message_handler(content_types = ['text'])
 def convert(message: telebot.types.Message):
-    quote, base, amount = message.text.split()
-    r = requests.get(f'https://min-api.cryptocompare.com/data/price?fsym={keys[quote]}&tsyms={keys[base]}')
+    values = message.text.split()
+    if len(values) > 3:
+        raise ConvertionException
+            #("Неправильный ввод данных")
+
+    quote, base, amount = values
+    if quote == base:
+        raise ConvertionException(f"Нельзя вводить одинаковые валюты {base}.")
+    try:
+        quote_ticker = keys[quote]
+    except KeyError:
+        raise ConvertionException(f"Не удалось обработать валюту {quote}")
+    try:
+        base_ticker = keys[base]
+    except KeyError:
+        raise ConvertionException(f"Не удалось обработать валюту {base}")
+    try:
+        amount = float(amount)
+    except ValueError:
+        raise ConvertionException(f"Не удалось обработать запрос {amount}")
+
+    r = requests.get(f'https://min-api.cryptocompare.com/data/price?fsym={quote_ticker}&tsyms={base_ticker}')
     total_base = json.loads(r.content)[keys[base]]
     text = f'Цена {amount} {quote} к {base} -{total_base}'
     bot.send_message(message.chat.id, text)
