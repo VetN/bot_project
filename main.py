@@ -40,7 +40,7 @@ def list_values(message: telebot.types.Message):
 def convert(message: telebot.types.Message):
     try:
         parametr = message.text.split()
-        if len(parametr) > 3:
+        if len(parametr) != 3:
             raise ConvertionException("Неправильный ввод данных")
         quote, base, amount = parametr
         total_base = Exchange.convert(quote, base, amount)
@@ -55,4 +55,3 @@ def convert(message: telebot.types.Message):
 
 
 bot.polling()
-
