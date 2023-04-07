@@ -9,7 +9,9 @@ class ConvertionException(Exception):
 
 class Exchange:
     @staticmethod
-    def convert(quote: str, base: str, amount: str):
+    def convert(quote: str,  base: str, amount: str):
+        quote = quote.lower()
+        base = base.lower()
         if quote == base:
             raise ConvertionException(f"Нельзя вводить одинаковые валюты {base}.")
         try:
